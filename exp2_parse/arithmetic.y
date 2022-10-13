@@ -1,6 +1,7 @@
 %{
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #ifndef YYSTYPE
 #define YYSTYPE double
 #endif
@@ -22,23 +23,24 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 %right LP
 %right UMINUS
 
-%start lines
-
 %%
 
 lines:line lines 
     | line
     ;
 
-line: expr '\n' { printf("%f\n", $2);}
+line: expr ';' { printf("%f\n", $1);}
 
-expr: expr ADD term { $$ = $1 + $3 ; }  
+expr: term
+    | expr ADD term { $$ = $1 + $3 ; }  
     | expr SUB term { $$ = $1 - $3 ; } 
     | SUB expr %prec UMINUS { $$ = -$2 ; } 
     ;
 
-term: term MUL factor { $$ = $1 * $3 ; }
+term: factor
+    | term MUL factor { $$ = $1 * $3 ; }
     | term DEV factor { $$ = $1 / $3 ; }
+    ;
 
 factor:LP expr RP { $$ = $2 ; }
     | INTEGER { $$ = $1 ; }
@@ -67,9 +69,9 @@ int inchar;
         else if ( inchar=='+')return ADD;
         else if ( inchar=='-')return SUB;
         else if ( inchar=='*')return MUL;
-        else if ( incahr=='/')return DEV;
-        else if ( inchar == '(')return LP;
-        else if ( inchar == ')')return RP;
+        else if ( inchar=='/')return DEV;
+        else if ( inchar=='(')return LP;
+        else if ( inchar==')')return RP;
         else return inchar ;
     }
 }

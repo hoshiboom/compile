@@ -16,9 +16,9 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 
 
 %token INTEGER ID
-%token ADD SUB MUL DEV LP RP
+%token ADD SUB MUL DIV LP RP
 %left ADD SUB
-%left MUL DEV
+%left MUL DIV
 %right UMINUS
 
 %start lines
@@ -27,18 +27,18 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 
 lines:line lines 
     | line
-    |
     ;
 
-line: expr '\n' { printf("%s\n", $1);}
+line: expr ';' { printf("%s\n", $1);}
 
-expr: expr ADD term {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"+ "); }  
-    | expr SUB term {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"- "); } 
+expr: expr ADD expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"+ "); }  
+    | expr SUB expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"- "); } 
     | SUB expr %prec UMINUS {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,"-"); strcat($$,$2); } 
     | expr MUL expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"* "); }
     | expr DIV expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"/ "); }
     | LP expr RP    { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$2); }
     | INTEGER       { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
+    | ID            { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
     ;
 
 
@@ -59,7 +59,7 @@ int yylex ()
                 inchar = getchar ( ) ;
                 i++;
             }
-            inchar[i]='\0';
+            yylval[i]='\0';
             ungetc( inchar , stdin ) ;//????????????????????将inchar推到标准输入流以便接下来赋给yyin
 
             return INTEGER;
@@ -80,7 +80,7 @@ int yylex ()
         else if ( inchar=='+')return ADD;
         else if ( inchar=='-')return SUB;
         else if ( inchar=='*')return MUL;
-        else if ( inchar=='/')return DEV;
+        else if ( inchar=='/')return DIV;
         else if ( inchar =='(')return LP;
         else if ( inchar ==')')return RP;
         else return inchar ;

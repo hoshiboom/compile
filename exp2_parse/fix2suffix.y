@@ -53,25 +53,26 @@ int yylex ()
         if ( inchar == ' ' || inchar== '\t' || inchar == '\n'){}//识别空格和制表符
         
         else if ( isdigit( inchar )) {
-            yylval = 0;
+            int i=0;
             while ( isdigit ( inchar )) {
-            yylval = yylval * 10 + inchar - '0' ;
-            inchar = getchar ( ) ;
+                yylval[i]=inchar ;
+                inchar = getchar ( ) ;
+                i++;
             }
+            inchar[i]='\0';
             ungetc( inchar , stdin ) ;//????????????????????将inchar推到标准输入流以便接下来赋给yyin
 
             return INTEGER;
         }
 
         else if(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')){
-            int ti=0;
+            int i=0;
             while(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')||isdigit(inchar)){
-                idStr[ti] = inchar;
-                ti++;
+                yylval[i] = inchar;
                 inchar=getchar(); 
+                i++;
             }
-            idStr[ti] = '\0';
-            yylval = idStr;
+            yylval[i] = '\0';
             ungetc(inchar,stdin);
             return ID;   
         }

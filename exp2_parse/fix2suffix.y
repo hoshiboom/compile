@@ -12,8 +12,8 @@ FILE* yyin ;//指定输入，可以指向文件或标准输入流等
 void yyerror(const char* s ) ;
 int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用没有使用lex故需要自己重写
 
-char num[30];
-char identfier[30];
+char num[50];
+char identfier[50];
 
 %}
 

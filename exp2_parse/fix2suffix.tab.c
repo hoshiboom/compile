@@ -82,8 +82,8 @@ FILE* yyin ;//指定输入，可以指向文件或标准输入流等
 void yyerror(const char* s ) ;
 int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用没有使用lex故需要自己重写
 
-char num[30];
-char identfier[30];
+char num[50];
+char identfier[50];
 
 
 #line 90 "fix2suffix.tab.c"
@@ -1347,7 +1347,7 @@ int yylex ()
         
         else if ( isdigit( inchar )) {
             int i=0;
-            //char num[30];
+            //char num[30]; //写在局部变量会出现乱码，推测返回时yylval找不到存放字符的正确的地址，应该是被销毁了
             while ( isdigit ( inchar )) {
                 num[i]=inchar ;
                 inchar = getchar ( ) ;

@@ -82,8 +82,11 @@ FILE* yyin ;//指定输入，可以指向文件或标准输入流等
 void yyerror(const char* s ) ;
 int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用没有使用lex故需要自己重写
 
+char num[30];
+char identfier[30];
 
-#line 87 "fix2suffix.tab.c"
+
+#line 90 "fix2suffix.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -106,52 +109,7 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 #  endif
 # endif
 
-
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token kinds.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    INTEGER = 258,                 /* INTEGER  */
-    ID = 259,                      /* ID  */
-    ADD = 260,                     /* ADD  */
-    SUB = 261,                     /* SUB  */
-    MUL = 262,                     /* MUL  */
-    DIV = 263,                     /* DIV  */
-    LP = 264,                      /* LP  */
-    RP = 265,                      /* RP  */
-    UMINUS = 266                   /* UMINUS  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
-
-
-extern YYSTYPE yylval;
-
-
-int yyparse (void);
-
-
-
+#include "fix2suffix.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -559,8 +517,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    28,    28,    29,    32,    34,    35,    36,    37,    38,
-      39,    40,    41
+       0,    31,    31,    32,    35,    37,    38,    39,    40,    41,
+      42,    43,    44
 };
 #endif
 
@@ -1130,61 +1088,61 @@ yyreduce:
   switch (yyn)
     {
   case 4: /* line: expr ';'  */
-#line 32 "fix2suffix.y"
+#line 35 "fix2suffix.y"
                { printf("%s\n", yyvsp[-1]);}
-#line 1136 "fix2suffix.tab.c"
+#line 1094 "fix2suffix.tab.c"
     break;
 
   case 5: /* expr: expr ADD expr  */
-#line 34 "fix2suffix.y"
+#line 37 "fix2suffix.y"
                     {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-2]); strcat(yyval,yyvsp[0]); strcat(yyval,"+ "); }
-#line 1142 "fix2suffix.tab.c"
+#line 1100 "fix2suffix.tab.c"
     break;
 
   case 6: /* expr: expr SUB expr  */
-#line 35 "fix2suffix.y"
+#line 38 "fix2suffix.y"
                     {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-2]); strcat(yyval,yyvsp[0]); strcat(yyval,"- "); }
-#line 1148 "fix2suffix.tab.c"
+#line 1106 "fix2suffix.tab.c"
     break;
 
   case 7: /* expr: SUB expr  */
-#line 36 "fix2suffix.y"
+#line 39 "fix2suffix.y"
                             {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,"-"); strcat(yyval,yyvsp[0]); }
-#line 1154 "fix2suffix.tab.c"
+#line 1112 "fix2suffix.tab.c"
     break;
 
   case 8: /* expr: expr MUL expr  */
-#line 37 "fix2suffix.y"
+#line 40 "fix2suffix.y"
                     {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-2]); strcat(yyval,yyvsp[0]); strcat(yyval,"* "); }
-#line 1160 "fix2suffix.tab.c"
+#line 1118 "fix2suffix.tab.c"
     break;
 
   case 9: /* expr: expr DIV expr  */
-#line 38 "fix2suffix.y"
+#line 41 "fix2suffix.y"
                     {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-2]); strcat(yyval,yyvsp[0]); strcat(yyval,"/ "); }
-#line 1166 "fix2suffix.tab.c"
+#line 1124 "fix2suffix.tab.c"
     break;
 
   case 10: /* expr: LP expr RP  */
-#line 39 "fix2suffix.y"
-                    { yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-1]); }
-#line 1172 "fix2suffix.tab.c"
+#line 42 "fix2suffix.y"
+                    {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[-1]); }
+#line 1130 "fix2suffix.tab.c"
     break;
 
   case 11: /* expr: INTEGER  */
-#line 40 "fix2suffix.y"
-                    { yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[0]); strcat(yyval," "); }
-#line 1178 "fix2suffix.tab.c"
+#line 43 "fix2suffix.y"
+                    {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[0]); strcat(yyval," "); }
+#line 1136 "fix2suffix.tab.c"
     break;
 
   case 12: /* expr: ID  */
-#line 41 "fix2suffix.y"
-                    { yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[0]); strcat(yyval," "); }
-#line 1184 "fix2suffix.tab.c"
+#line 44 "fix2suffix.y"
+                    {yyval = (char *)malloc(50*sizeof(char)); strcpy(yyval,yyvsp[0]); strcat(yyval," "); }
+#line 1142 "fix2suffix.tab.c"
     break;
 
 
-#line 1188 "fix2suffix.tab.c"
+#line 1146 "fix2suffix.tab.c"
 
       default: break;
     }
@@ -1377,7 +1335,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 46 "fix2suffix.y"
+#line 49 "fix2suffix.y"
 
 int yylex ()
  {
@@ -1389,7 +1347,7 @@ int yylex ()
         
         else if ( isdigit( inchar )) {
             int i=0;
-            char *num;
+            //char num[30];
             while ( isdigit ( inchar )) {
                 num[i]=inchar ;
                 inchar = getchar ( ) ;
@@ -1397,15 +1355,15 @@ int yylex ()
             }
             num[i]='\0';
             yylval=num;
-            ungetc( inchar , stdin ) ;//????????????????????将inchar推到标准输入流以便接下来赋给yyin
+            ungetc( inchar , stdin ) ;
 
             return INTEGER;
         }
 
-        else if(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')){
+        else if(isalpha(inchar)||(inchar=='_')){
             int i=0;
-            char *identfier;
-            while(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')||isdigit(inchar)){
+            //char identfier[30];
+            while(isalpha(inchar)||(inchar=='_')||isdigit(inchar)){
                 identfier[i] = inchar;
                 inchar=getchar(); 
                 i++;

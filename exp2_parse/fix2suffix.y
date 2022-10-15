@@ -12,6 +12,9 @@ FILE* yyin ;//指定输入，可以指向文件或标准输入流等
 void yyerror(const char* s ) ;
 int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用没有使用lex故需要自己重写
 
+char num[30];
+char identfier[30];
+
 %}
 
 
@@ -36,9 +39,9 @@ expr: expr ADD expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat
     | SUB expr %prec UMINUS {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,"-"); strcat($$,$2); } 
     | expr MUL expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"* "); }
     | expr DIV expr {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$,$3); strcat($$,"/ "); }
-    | LP expr RP    { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$2); }
-    | INTEGER       { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
-    | ID            { $$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
+    | LP expr RP    {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$2); }
+    | INTEGER       {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
+    | ID            {$$ = (char *)malloc(50*sizeof(char)); strcpy($$,$1); strcat($$," "); }
     ;
 
 
@@ -54,7 +57,7 @@ int yylex ()
         
         else if ( isdigit( inchar )) {
             int i=0;
-            char *num;
+            //char num[30]; //写在局部变量会出现乱码，推测返回时yylval找不到存放字符的正确的地址，应该是被销毁了
             while ( isdigit ( inchar )) {
                 num[i]=inchar ;
                 inchar = getchar ( ) ;
@@ -67,10 +70,10 @@ int yylex ()
             return INTEGER;
         }
 
-        else if(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')){
+        else if(isalpha(inchar)||(inchar=='_')){
             int i=0;
-            char *identfier;
-            while(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')||isdigit(inchar)){
+            //char identfier[30];
+            while(isalpha(inchar)||(inchar=='_')||isdigit(inchar)){
                 identfier[i] = inchar;
                 inchar=getchar(); 
                 i++;

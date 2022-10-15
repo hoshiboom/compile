@@ -59,7 +59,7 @@ extern int yydebug;
     ADD = 260,                     /* ADD  */
     SUB = 261,                     /* SUB  */
     MUL = 262,                     /* MUL  */
-    DEV = 263,                     /* DEV  */
+    DIV = 263,                     /* DIV  */
     LP = 264,                      /* LP  */
     RP = 265,                      /* RP  */
     UMINUS = 266                   /* UMINUS  */

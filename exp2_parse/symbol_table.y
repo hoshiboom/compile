@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <map>
 
-
 struct entry{   
     char* name;
     double value;
@@ -14,7 +13,7 @@ std::map <char*,double> stable;
 #define YYSTYPE entry
 #endif
 
-char identfier[30];
+//char identfier[50];
 
 extern int yyparse ( ) ;//语法分析入口，由bison自动生成
 FILE* yyin ;//指定输入，可以指向文件或标准输入流等
@@ -30,6 +29,7 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 %token ADD SUB MUL DIV LP RP EQUAL
 %type<value> expr term factor
 
+%left EQUAL
 %left ADD SUB
 %left MUL DIV
 %left RP
@@ -73,24 +73,28 @@ int inchar;
         
         else if(isdigit(inchar)){
             yylval.value = 0;
-            while ( isdigit ( inchar )) {
+            while (isdigit(inchar)){
             yylval.value = yylval.value * 10 + inchar - '0' ;
             inchar = getchar ( ) ;
             }
-            ungetc( inchar , stdin ) ;//将最后一个不是数字的inchar推到标准输入流
+            ungetc(inchar,stdin) ;//将最后一个不是数字的inchar推到标准输入流
 
             return INTEGER;
         }
 
         else if(isalpha(inchar)||(inchar=='_')){
             int i=0;
+            //char* identfier;
+            //identfier=(char *)malloc(50*sizeof(char));
+            char* str;
             while(isalpha(inchar)||(inchar=='_')||isdigit(inchar)){
-                identfier[i] = inchar;
+                str += inchar;
                 inchar=getchar(); 
                 i++;
             }
-            identfier[i] = '\0';
-            yylval.name=identfier;
+            //yylval.name[i] = '\0';
+            //yylval.name=identfier;
+            yylval.name=str;
             ungetc(inchar,stdin);
             return ID;   
         }
@@ -101,6 +105,7 @@ int inchar;
         else if ( inchar=='/')return DIV;
         else if ( inchar=='(')return LP;
         else if ( inchar==')')return RP;
+        else if ( inchar=='=')return EQUAL;
         else return inchar ;
     }
 }

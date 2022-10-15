@@ -72,8 +72,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
-#include <iostream>
 #include <map>
+#include <string>
+#include<cstring>
 using namespace std;
 
 struct entry{   
@@ -85,7 +86,7 @@ std::map <char*,double> stable;
 #define YYSTYPE entry
 #endif
 
-char identfier[30];
+//char identfier[50];
 
 extern int yyparse ( ) ;//语法分析入口，由bison自动生成
 FILE* yyin ;//指定输入，可以指向文件或标准输入流等
@@ -94,7 +95,7 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 
 
 
-#line 98 "symbol_table.tab.c"
+#line 99 "symbol_table.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -528,8 +529,8 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    42,    42,    43,    46,    47,    50,    51,    52,    53,
-      56,    57,    58,    61,    62,    63
+       0,    44,    44,    45,    48,    49,    52,    53,    54,    55,
+      58,    59,    60,    63,    64,    65
 };
 #endif
 
@@ -1101,67 +1102,67 @@ yyreduce:
   switch (yyn)
     {
   case 4: /* line: ID EQUAL expr ';'  */
-#line 46 "symbol_table.y"
+#line 48 "symbol_table.y"
                         {stable[(yyvsp[-3].name)]=(yyvsp[-1].value);}
-#line 1107 "symbol_table.tab.c"
+#line 1108 "symbol_table.tab.c"
     break;
 
   case 5: /* line: expr ';'  */
-#line 47 "symbol_table.y"
+#line 49 "symbol_table.y"
               {printf("%f\n",(yyvsp[-1].value));}
-#line 1113 "symbol_table.tab.c"
+#line 1114 "symbol_table.tab.c"
     break;
 
   case 7: /* expr: expr ADD term  */
-#line 51 "symbol_table.y"
+#line 53 "symbol_table.y"
                     { (yyval.value) = (yyvsp[-2].value) + (yyvsp[0].value) ; }
-#line 1119 "symbol_table.tab.c"
+#line 1120 "symbol_table.tab.c"
     break;
 
   case 8: /* expr: expr SUB term  */
-#line 52 "symbol_table.y"
+#line 54 "symbol_table.y"
                     { (yyval.value) = (yyvsp[-2].value) - (yyvsp[0].value) ; }
-#line 1125 "symbol_table.tab.c"
+#line 1126 "symbol_table.tab.c"
     break;
 
   case 9: /* expr: SUB expr  */
-#line 53 "symbol_table.y"
+#line 55 "symbol_table.y"
                             { (yyval.value) = -(yyvsp[0].value) ; }
-#line 1131 "symbol_table.tab.c"
+#line 1132 "symbol_table.tab.c"
     break;
 
   case 11: /* term: term MUL factor  */
-#line 57 "symbol_table.y"
+#line 59 "symbol_table.y"
                       { (yyval.value) = (yyvsp[-2].value) * (yyvsp[0].value) ; }
-#line 1137 "symbol_table.tab.c"
+#line 1138 "symbol_table.tab.c"
     break;
 
   case 12: /* term: term DIV factor  */
-#line 58 "symbol_table.y"
+#line 60 "symbol_table.y"
                       { (yyval.value) = (yyvsp[-2].value) / (yyvsp[0].value) ; }
-#line 1143 "symbol_table.tab.c"
+#line 1144 "symbol_table.tab.c"
     break;
 
   case 13: /* factor: LP expr RP  */
-#line 61 "symbol_table.y"
+#line 63 "symbol_table.y"
                   { (yyval.value) = (yyvsp[-1].value) ; }
-#line 1149 "symbol_table.tab.c"
+#line 1150 "symbol_table.tab.c"
     break;
 
   case 14: /* factor: INTEGER  */
-#line 62 "symbol_table.y"
+#line 64 "symbol_table.y"
               { (yyval.value) = (yyvsp[0].value) ; }
-#line 1155 "symbol_table.tab.c"
+#line 1156 "symbol_table.tab.c"
     break;
 
   case 15: /* factor: ID  */
-#line 63 "symbol_table.y"
+#line 65 "symbol_table.y"
          { (yyval.value)=stable[(yyvsp[0].name)]; }
-#line 1161 "symbol_table.tab.c"
+#line 1162 "symbol_table.tab.c"
     break;
 
 
-#line 1165 "symbol_table.tab.c"
+#line 1166 "symbol_table.tab.c"
 
       default: break;
     }
@@ -1354,7 +1355,7 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 66 "symbol_table.y"
+#line 68 "symbol_table.y"
 
 int yylex ()
  {
@@ -1366,24 +1367,28 @@ int inchar;
         
         else if(isdigit(inchar)){
             yylval.value = 0;
-            while ( isdigit ( inchar )) {
+            while (isdigit(inchar)){
             yylval.value = yylval.value * 10 + inchar - '0' ;
             inchar = getchar ( ) ;
             }
-            ungetc( inchar , stdin ) ;//将最后一个不是数字的inchar推到标准输入流
+            ungetc(inchar,stdin) ;//将最后一个不是数字的inchar推到标准输入流
 
             return INTEGER;
         }
 
         else if(isalpha(inchar)||(inchar=='_')){
             int i=0;
+            //char* identfier;
+            //identfier=(char *)malloc(50*sizeof(char));
+            char* str;
             while(isalpha(inchar)||(inchar=='_')||isdigit(inchar)){
-                identfier[i] = inchar;
+                str += inchar;
                 inchar=getchar(); 
                 i++;
             }
-            identfier[i] = '\0';
-            yylval.name=identfier;
+            //yylval.name[i] = '\0';
+            //yylval.name=identfier;
+            yylval.name=str;
             ungetc(inchar,stdin);
             return ID;   
         }
@@ -1394,6 +1399,7 @@ int inchar;
         else if ( inchar=='/')return DIV;
         else if ( inchar=='(')return LP;
         else if ( inchar==')')return RP;
+        else if ( inchar=='=')return EQUAL;
         else return inchar ;
     }
 }

@@ -106,51 +106,7 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 #  endif
 # endif
 
-
-/* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
-#if YYDEBUG
-extern int yydebug;
-#endif
-
-/* Token kinds.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
-  {
-    YYEMPTY = -2,
-    YYEOF = 0,                     /* "end of file"  */
-    YYerror = 256,                 /* error  */
-    YYUNDEF = 257,                 /* "invalid token"  */
-    INTEGER = 258,                 /* INTEGER  */
-    ADD = 259,                     /* ADD  */
-    SUB = 260,                     /* SUB  */
-    MUL = 261,                     /* MUL  */
-    DEV = 262,                     /* DEV  */
-    LP = 263,                      /* LP  */
-    RP = 264,                      /* RP  */
-    UMINUS = 265                   /* UMINUS  */
-  };
-  typedef enum yytokentype yytoken_kind_t;
-#endif
-
-/* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-typedef int YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
-#endif
-
-
-extern YYSTYPE yylval;
-
-
-int yyparse (void);
-
-
-
+#include "arithmetic.tab.h"
 /* Symbol kind.  */
 enum yysymbol_kind_t
 {
@@ -162,7 +118,7 @@ enum yysymbol_kind_t
   YYSYMBOL_ADD = 4,                        /* ADD  */
   YYSYMBOL_SUB = 5,                        /* SUB  */
   YYSYMBOL_MUL = 6,                        /* MUL  */
-  YYSYMBOL_DEV = 7,                        /* DEV  */
+  YYSYMBOL_DIV = 7,                        /* DIV  */
   YYSYMBOL_LP = 8,                         /* LP  */
   YYSYMBOL_RP = 9,                         /* RP  */
   YYSYMBOL_UMINUS = 10,                    /* UMINUS  */
@@ -577,7 +533,7 @@ static const char *yysymbol_name (yysymbol_kind_t yysymbol) YY_ATTRIBUTE_UNUSED;
 static const char *const yytname[] =
 {
   "\"end of file\"", "error", "\"invalid token\"", "INTEGER", "ADD",
-  "SUB", "MUL", "DEV", "LP", "RP", "UMINUS", "';'", "$accept", "lines",
+  "SUB", "MUL", "DIV", "LP", "RP", "UMINUS", "';'", "$accept", "lines",
   "line", "expr", "term", "factor", YY_NULLPTR
 };
 
@@ -1132,53 +1088,53 @@ yyreduce:
   case 4: /* line: expr ';'  */
 #line 32 "arithmetic.y"
                { printf("%f\n", yyvsp[-1]);}
-#line 1136 "arithmetic.tab.c"
+#line 1092 "arithmetic.tab.c"
     break;
 
   case 6: /* expr: expr ADD term  */
 #line 35 "arithmetic.y"
                     { yyval = yyvsp[-2] + yyvsp[0] ; }
-#line 1142 "arithmetic.tab.c"
+#line 1098 "arithmetic.tab.c"
     break;
 
   case 7: /* expr: expr SUB term  */
 #line 36 "arithmetic.y"
                     { yyval = yyvsp[-2] - yyvsp[0] ; }
-#line 1148 "arithmetic.tab.c"
+#line 1104 "arithmetic.tab.c"
     break;
 
   case 8: /* expr: SUB expr  */
 #line 37 "arithmetic.y"
                             { yyval = -yyvsp[0] ; }
-#line 1154 "arithmetic.tab.c"
+#line 1110 "arithmetic.tab.c"
     break;
 
   case 10: /* term: term MUL factor  */
 #line 41 "arithmetic.y"
                       { yyval = yyvsp[-2] * yyvsp[0] ; }
-#line 1160 "arithmetic.tab.c"
+#line 1116 "arithmetic.tab.c"
     break;
 
-  case 11: /* term: term DEV factor  */
+  case 11: /* term: term DIV factor  */
 #line 42 "arithmetic.y"
                       { yyval = yyvsp[-2] / yyvsp[0] ; }
-#line 1166 "arithmetic.tab.c"
+#line 1122 "arithmetic.tab.c"
     break;
 
   case 12: /* factor: LP expr RP  */
 #line 45 "arithmetic.y"
                   { yyval = yyvsp[-1] ; }
-#line 1172 "arithmetic.tab.c"
+#line 1128 "arithmetic.tab.c"
     break;
 
   case 13: /* factor: INTEGER  */
 #line 46 "arithmetic.y"
               { yyval = yyvsp[0] ; }
-#line 1178 "arithmetic.tab.c"
+#line 1134 "arithmetic.tab.c"
     break;
 
 
-#line 1182 "arithmetic.tab.c"
+#line 1138 "arithmetic.tab.c"
 
       default: break;
     }
@@ -1395,7 +1351,7 @@ int inchar;
         else if ( inchar=='+')return ADD;
         else if ( inchar=='-')return SUB;
         else if ( inchar=='*')return MUL;
-        else if ( inchar=='/')return DEV;
+        else if ( inchar=='/')return DIV;
         else if ( inchar=='(')return LP;
         else if ( inchar==')')return RP;
         else return inchar ;

@@ -16,9 +16,9 @@ int yylex ( ) ;//由lex自动生成，返回终结符含义，由于没有使用
 
 
 %token INTEGER 
-%token ADD SUB MUL DEV LP RP
+%token ADD SUB MUL DIV LP RP
 %left ADD SUB
-%left MUL DEV
+%left MUL DIV
 %left RP
 %right LP
 %right UMINUS
@@ -39,7 +39,7 @@ expr: term
 
 term: factor
     | term MUL factor { $$ = $1 * $3 ; }
-    | term DEV factor { $$ = $1 / $3 ; }
+    | term DIV factor { $$ = $1 / $3 ; }
     ;
 
 factor:LP expr RP { $$ = $2 ; }
@@ -61,7 +61,7 @@ int inchar;
             yylval = yylval * 10 + inchar - '0' ;
             inchar = getchar ( ) ;
             }
-            ungetc( inchar , stdin ) ;//将inchar推到标准输入流以便接下来赋给yyin
+            ungetc( inchar , stdin ) ;//将最后一个不是数字的inchar推到标准输入流
 
             return INTEGER;
         }
@@ -69,7 +69,7 @@ int inchar;
         else if ( inchar=='+')return ADD;
         else if ( inchar=='-')return SUB;
         else if ( inchar=='*')return MUL;
-        else if ( inchar=='/')return DEV;
+        else if ( inchar=='/')return DIV;
         else if ( inchar=='(')return LP;
         else if ( inchar==')')return RP;
         else return inchar ;

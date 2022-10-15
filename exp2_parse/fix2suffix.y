@@ -54,25 +54,29 @@ int yylex ()
         
         else if ( isdigit( inchar )) {
             int i=0;
+            char *num;
             while ( isdigit ( inchar )) {
-                yylval[i]=inchar ;
+                num[i]=inchar ;
                 inchar = getchar ( ) ;
                 i++;
             }
-            yylval[i]='\0';
-            ungetc( inchar , stdin ) ;//????????????????????将inchar推到标准输入流以便接下来赋给yyin
+            num[i]='\0';
+            yylval=num;
+            ungetc( inchar , stdin ) ;
 
             return INTEGER;
         }
 
         else if(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')){
             int i=0;
+            char *identfier;
             while(('a'<=inchar&&inchar<='z')||('A'<=inchar&&'Z'>=inchar)||(inchar=='_')||isdigit(inchar)){
-                yylval[i] = inchar;
+                identfier[i] = inchar;
                 inchar=getchar(); 
                 i++;
             }
-            yylval[i] = '\0';
+            identfier[i] = '\0';
+            yylval=identfier;
             ungetc(inchar,stdin);
             return ID;   
         }

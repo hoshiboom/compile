@@ -41,9 +41,9 @@ public:
 class ExprNode : public Node
 {
 protected:
+    Type* type;
     SymbolEntry *symbolEntry;
     Operand *dst;   // The result of the subtree is stored into dst.
-    Type* type;
 public:
     ExprNode(SymbolEntry *symbolEntry) : symbolEntry(symbolEntry){};
     Operand* getOperand() {return dst;};
@@ -114,7 +114,11 @@ public:
 class Constant : public ExprNode
 {
 public:
-    Constant(SymbolEntry *se) : ExprNode(se){dst = new Operand(se);};
+    Constant(SymbolEntry *se) : ExprNode(se)
+    {
+        dst = new Operand(se);
+        type = TypeSystem::intType;
+    };
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
@@ -123,7 +127,12 @@ public:
 class Id : public ExprNode
 {
 public:
-    Id(SymbolEntry *se) : ExprNode(se){SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel()); dst = new Operand(temp);};
+    Id(SymbolEntry *se) : ExprNode(se)
+    {
+        SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel()); 
+        dst = new Operand(temp);
+        type = se->getType();
+    };
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
@@ -245,7 +254,7 @@ class ReturnStmt : public StmtNode
 private:
     ExprNode *retValue;
 public:
-    ReturnStmt(ExprNode*retValue = nullptr) : retValue(retValue) {};
+    ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();

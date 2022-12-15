@@ -73,11 +73,11 @@ LVal
     : ID {
         SymbolEntry *se;
         se = identifiers->lookup($1);
-        if(se == nullptr)
+        if(se == nullptr)//类型检查——未定义
         {
             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
-            delete [](char*)$1;
-            assert(se != nullptr);
+            //delete [](char*)$1;
+            //assert(se != nullptr);
         }
         $$ = new Id(se);
         delete []$1;

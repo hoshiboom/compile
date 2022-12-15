@@ -60,7 +60,7 @@ private:
     ExprNode *expr1, *expr2;
 public:
     enum {ADD, SUB, MUL, DIV, AND, OR, LESS, MORE, MOD, EQUMORE, EQULESS, EQUAL, NOTEQUAL};
-    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2){};
+    BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2);
     void output(int level);
     void genCode();
     bool typeCheck(Type* retType = nullptr);
@@ -129,9 +129,11 @@ class Id : public ExprNode
 public:
     Id(SymbolEntry *se) : ExprNode(se)
     {
-        SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel()); 
-        dst = new Operand(temp);
-        type = se->getType();
+        if(se){
+            SymbolEntry *temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel()); 
+            dst = new Operand(temp);
+            type = se->getType();
+        }        
     };
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
@@ -193,8 +195,7 @@ private:
     ExprNode *cond;
     StmtNode *thenStmt;
 public:
-    IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt)
-    {};
+    IfStmt(ExprNode *cond, StmtNode *thenStmt);
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
@@ -207,8 +208,7 @@ private:
     StmtNode *thenStmt;
     StmtNode *elseStmt;
 public:
-    IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt) : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) 
-    {};
+    IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt);
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
@@ -219,8 +219,7 @@ private:
     ExprNode* cond;
     StmtNode* stmt;
 public:
-    WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr): cond(cond), stmt(stmt)
-    {}
+    WhileStmt(ExprNode* cond, StmtNode* stmt=nullptr);
     void output(int level);
     bool typeCheck(Type* retType = nullptr){return false;};
     void genCode(){};
@@ -254,7 +253,7 @@ class ReturnStmt : public StmtNode
 private:
     ExprNode *retValue;
 public:
-    ReturnStmt(ExprNode*retValue) : retValue(retValue) {};
+    ReturnStmt(ExprNode*retValue = nullptr) : retValue(retValue) {};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
@@ -316,6 +315,26 @@ public:
     void output();
     bool typeCheck(Type* retType = nullptr);
     void genCode(Unit *unit);
+};
+
+
+
+// 用于隐式类型转换int2bool
+class ImplictCastExpr : public ExprNode {
+   private:
+    ExprNode* expr;
+
+   public:
+    ImplictCastExpr(ExprNode* expr)
+        : ExprNode(nullptr), expr(expr) {
+        type = TypeSystem::boolType;
+        dst = new Operand(
+            new TemporarySymbolEntry(type, SymbolTable::getLabel()));
+    };
+    void output(int level);
+    ExprNode* getExpr() const { return expr; };
+    bool typeCheck(Type* retType = nullptr) { return false; };
+    void genCode();
 };
 
 #endif

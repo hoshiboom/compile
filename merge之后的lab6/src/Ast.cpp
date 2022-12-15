@@ -256,6 +256,12 @@ void AssignStmt::genCode()
     new StoreInstruction(addr, src, bb);
 }
 
+
+
+// bool CallExpr::typeCheck(Type* retType) {
+//     return false;
+// }
+
 bool Ast::typeCheck(Type* retType)
 {
     if(root != nullptr)
@@ -523,7 +529,7 @@ void DeclStmt::output(int level)
 void IfStmt::output(int level)
 {
     fprintf(yyout, "%*cIfStmt\n", level, ' ');
-    cond->output(level + 4);//condÎªexprnode*ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½exprnodeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½?
+    cond->output(level + 4);//condÎªexprnode*ï¿½ï¿½ï¿½Í£ï¿½ï¿½ï¿½ï¿½ï¿½exprnodeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿???
     thenStmt->output(level + 4);
 }
 
@@ -591,4 +597,82 @@ void FunctionUse::output(int level)
     {expr->output(level + 4);}
 }
 
+void ImplictCastExpr::output(int level)
+{
+    fprintf(yyout, "%*cImplictCastExpr\ttype: %s to %s\n", level, ' ',
+            expr->getType()->toStr().c_str(), type->toStr().c_str());
+    this->expr->output(level + 4);
+}
 
+void ImplictCastExpr::genCode()
+{
+    expr->genCode();
+    BasicBlock* bb = builder->getInsertBB();
+    Function* func = bb->getParent();
+    BasicBlock* trueBB = new BasicBlock(func);
+    BasicBlock* tempbb = new BasicBlock(func);
+    BasicBlock* falseBB = new BasicBlock(func);
+
+    new CmpInstruction(
+        CmpInstruction::NE, this->dst, this->expr->getOperand(),
+        new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0)), bb);
+    this->trueList().push_back(
+        new CondBrInstruction(trueBB, tempbb, this->dst, bb));
+    this->falseList().push_back(new UncondBrInstruction(falseBB, tempbb));
+}
+
+BinaryExpr::BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2)
+{
+    //ÔÚ´Ë½øÐÐvoid²ÎÓëÔËËãµÄÀàÐÍ¼ì²é
+    if(expr1->getType()->isVoid()){
+        fprintf(stderr, "void cannot participate in binary operations\n");
+
+    }
+    if(expr2->getType()->isVoid()){
+        fprintf(stderr, "void cannot participate in binary operations\n");
+    }
+    dst = new Operand(se);
+    //¶ÔÓÚcondÐèÒªÒþÊ½×ª»»
+    if (op >= BinaryExpr::AND && op <= BinaryExpr::NOTEQUAL)//¹ØÏµÔËËã
+    {
+        type = TypeSystem::boolType;
+        if (op == BinaryExpr::AND || op == BinaryExpr::OR) {
+            if (expr1->getType()->isInt() &&
+                expr1->getType()->getSize() == 32) {
+                ImplictCastExpr* temp = new ImplictCastExpr(expr1);
+                this->expr1 = temp;
+            }
+            if (expr2->getType()->isInt() &&
+                expr2->getType()->getSize() == 32) {
+                ImplictCastExpr* temp = new ImplictCastExpr(expr2);
+                this->expr2 = temp;
+            }
+        }
+    } 
+    else
+        type = TypeSystem::intType;
+};
+
+IfStmt::IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenStmt)
+{
+    if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+            ImplictCastExpr* temp = new ImplictCastExpr(cond);
+            this->cond = temp;
+        }
+};
+
+WhileStmt::WhileStmt(ExprNode* cond, StmtNode* stmt): cond(cond), stmt(stmt)
+{
+    if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+            ImplictCastExpr* temp = new ImplictCastExpr(cond);
+            this->cond = temp;
+        }
+};
+
+IfElseStmt::IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt) : cond(cond), thenStmt(thenStmt), elseStmt(elseStmt) 
+{
+    if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
+            ImplictCastExpr* temp = new ImplictCastExpr(cond);
+            this->cond = temp;
+        }
+};

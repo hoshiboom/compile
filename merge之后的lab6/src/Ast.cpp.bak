@@ -48,37 +48,23 @@ std::vector<Instruction*> Node::merge(std::vector<Instruction*> &list1, std::vec
 
 FunctionUse::FunctionUse(SymbolEntry *se,ExprNode* expr):ExprNode(se), expr(expr)
 {
-    //ÔÚ´´½¨functionuse½ÚµãµÄÊ±ºò¾ÍÅÐ¶ÏÓÐÃ»ÓÐÉùÃ÷
+    //ï¿½Ú´ï¿½ï¿½ï¿½functionuseï¿½Úµï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½Ð¶ï¿½ï¿½ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     dst = nullptr;
     SymbolEntry* s = se;
-    int paramCnt = 0;//º¯Êýµ÷ÓÃÊ±µÄÊµ²Î¸öÊý
+    int paramCnt = 0;//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½Êµï¿½Î¸ï¿½ï¿½ï¿½
     ExprNode* temp = expr;
     while (temp) {
         paramCnt++;
         temp = (ExprNode*)(temp->getNext());
     }
     while (s) {
-        Type* type = s->getType();   //º¯ÊýÀàÐÍµÄentry
-        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();   //ÐÎ²ÎµÄvector
-        int t=0;
+        Type* type = s->getType();   //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Íµï¿½entry
+        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();   //ï¿½Î²Îµï¿½vector
         if ((long unsigned int)paramCnt == params.size()) {
-            ExprNode* temp = expr;
-            for(int i=0;i<paramCnt;i++)
-            {
-                if(temp->getType()!=params[i])
-                {
-                    t=1;
-                    break;
-                }
-                temp = (ExprNode*)(temp->getNext());
-            }
-            if(t==0)
-            {
-                this->symbolEntry = s;
-                break;
-            }
-        }//±È½ÏÃ¿¸ö²ÎÊýµÄtype
-        s = s->getNext();//²éÕÒº¯ÊýÖØÔØ
+            this->symbolEntry = s;
+            break;
+        }
+        s = s->getNext();//ï¿½ï¿½ï¿½Òºï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     }
     if (symbolEntry) {
         Type* type = symbolEntry->getType();
@@ -88,8 +74,8 @@ FunctionUse::FunctionUse(SymbolEntry *se,ExprNode* expr):ExprNode(se), expr(expr
                 new TemporarySymbolEntry(this->type, SymbolTable::getLabel());
             dst = new Operand(se);
         }
-        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();//ÐÎ²Î
-        ExprNode* temp = expr;//Êµ²Î
+        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();//ï¿½Î²ï¿½
+        ExprNode* temp = expr;//Êµï¿½ï¿½
         for (auto it = params.begin(); it != params.end(); it++) {
             if (temp == nullptr) {
                 fprintf(stderr, "too few arguments to function %s %s\n",
@@ -270,6 +256,12 @@ void AssignStmt::genCode()
     new StoreInstruction(addr, src, bb);
 }
 
+
+
+// bool CallExpr::typeCheck(Type* retType) {
+//     return false;
+// }
+
 bool Ast::typeCheck(Type* retType)
 {
     if(root != nullptr)
@@ -316,7 +308,7 @@ bool Id::typeCheck(Type* retType)
 bool IfStmt::typeCheck(Type* retType)
 {
     // Todo
-    if (thenStmt)   //ifÓï¾äÀïÃæÓÐret
+    if (thenStmt)   //ifï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ret
         return thenStmt->typeCheck(retType);
     return false;
 }
@@ -359,7 +351,7 @@ bool DeclStmt::typeCheck(Type* retType)
 
 bool ReturnStmt::typeCheck(Type* retType)
 { 
-    // Todo ±È½ÏExprNode *retValueµÄtypeºÍ´«ÈëµÄtypeÊÇ·ñÏàÍ¬
+    // Todo ï¿½È½ï¿½ExprNode *retValueï¿½ï¿½typeï¿½Í´ï¿½ï¿½ï¿½ï¿½typeï¿½Ç·ï¿½ï¿½ï¿½Í¬
     // retValue->getSymbolEntry()->getType()
     if (!retType) {
         fprintf(stderr, "[wrong]ret stmt not in function\n");
@@ -388,8 +380,8 @@ bool ReturnStmt::typeCheck(Type* retType)
                 retType->toStr().c_str(), type->toStr().c_str());//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½×ªï¿½ï¿½
         fprintf(stderr,"fuctionret and ret value have different types\n");
         fprintf(stderr,"function ret type %s\n",retType->toStr().c_str());
-        fprintf(stderr,"value type%s\n",type->toStr().c_str());
-        //valueÕâ¸ötypeÓÐÎÊÌâ
+        //fprintf(stderr,"value type%s\n",type->toStr().c_str());
+        //valueï¿½ï¿½ï¿½typeï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     }
     return true;
 }

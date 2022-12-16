@@ -134,25 +134,13 @@ WhileStmt
     }
     ;
 BreakStmt
-    : BREAK SEMICOLON {
-        if(!whileStk.empty())
-            $$ = new BreakStmt(whileStk.top());
-        else
-            {
-                fprintf(stderr,"breakstmt not in a while stmt\n");
-                exit(EXIT_FAILURE);
-            }
+    : BREAK SEMICOLON {//break��cotinue��Ե��ǵ�ǰѭ���������Ҫ����while�ڵ�
+        $$ = new BreakStmt(whileStk.top());
     }
     ;
 ContinueStmt
     : CONTINUE SEMICOLON {
-        if(!whileStk.empty())
-            $$ = new ContinueStmt(whileStk.top());
-        else
-            {
-                fprintf(stderr,"breakstmt not in a while stmt\n");
-                exit(EXIT_FAILURE);
-            }
+        $$ = new ContinueStmt(whileStk.top());
     }
     ;
 ReturnStmt

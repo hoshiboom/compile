@@ -138,7 +138,7 @@ private:
 public:
     SymbolTable();
     SymbolTable(SymbolTable *prev);
-    bool install(std::string name, SymbolEntry* entry);
+    void install(std::string name, SymbolEntry* entry);
     SymbolEntry* lookup(std::string name);
     SymbolTable* getPrev() {return prev;};
     int getLevel() {return level;};

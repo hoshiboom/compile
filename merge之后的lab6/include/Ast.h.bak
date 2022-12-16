@@ -146,9 +146,6 @@ private:
     int kind;
 protected:
     enum{IF,IFELSE,WHILE,COMPOUND,RETURN};
-public:
-    StmtNode(int kind = -1) : kind(kind){};
-    int getkind(){return kind;};
 };
 
 class CompoundStmt : public StmtNode
@@ -226,11 +223,11 @@ public:
     void output(int level);
     bool typeCheck(Type* retType = nullptr){return false;};
     void genCode(){};
-    void setStmt(StmtNode* s){this->stmt=s;};
+    void setStmt(StmtNode* s){this->stmt=s;};//while��stmt���п��ޣ��ʳ�ʼ����Ϊ�գ�����ʶ�𵽵�while�پ����Ƿ�setStmt
 };
 
 class BreakStmt : public StmtNode
-{
+{//break��Ӧ��ǰ��whileѭ������Ҫ�оֲ�����StmtNode* whileStmt��ʹ�ø���ָ�����Ϳ���ָ������ڵ�?
 private:
     StmtNode* whilestmt;
 public:

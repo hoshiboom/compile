@@ -14,38 +14,10 @@ bool SymbolEntry::setNext(SymbolEntry* se) {
     long unsigned int cnt =
         ((FunctionType*)(se->getType()))->getParamsType().size();
     if (cnt == ((FunctionType*)(s->getType()))->getParamsType().size())
-    {
-        std::vector<Type*> pv1=((FunctionType*)(se->getType()))->getParamsType();
-        std::vector<Type*> pv2=((FunctionType*)(s->getType()))->getParamsType();
-        int temp=0;
-        for(int i=0;i<int(cnt);i++)
-        {
-            if(pv1[i]!=pv2[i])
-                temp=1;
-        }
-        if(temp==0)
-            {
-                fprintf(stderr,"fuction overloading wrong,already have funcion %s\n",se->toStr().c_str());
-                return false;//要依次判断参数类型，不要直接return
-            }
-    }
+        return false;
     while (s->getNext()) {
         if (cnt == ((FunctionType*)(s->getType()))->getParamsType().size())
-        {
-            std::vector<Type*> pv1=((FunctionType*)(se->getType()))->getParamsType();
-            std::vector<Type*> pv2=((FunctionType*)(s->getType()))->getParamsType();
-            int temp=0;
-            for(int i=0;i<int(cnt);i++)
-            {
-                if(pv1[i]!=pv2[i])
-                    temp=1;
-            }
-            if(temp==0)
-            {
-                fprintf(stderr,"fuction overloading wrong,already have funcion %s\n",se->toStr().c_str());
-                return false;//要依次判断参数类型，不要直接return 重载
-            }
-        }
+            return false;
         s = s->getNext();
     }
     if (s == this) {
@@ -118,6 +90,7 @@ SymbolTable::SymbolTable(SymbolTable *prev)
 */
 SymbolEntry* SymbolTable::lookup(std::string name)
 {
+    // ���Ӹ���prev���Ĳ��Һ���
     SymbolTable* temp_point = this;
     do {
         std::map<std::string, SymbolEntry*>::iterator it;
@@ -131,16 +104,9 @@ SymbolEntry* SymbolTable::lookup(std::string name)
 }
 
 // install the entry into current symbol table.
-bool SymbolTable::install(std::string name, SymbolEntry* entry) {
-    if (this->symbolTable.find(name) != this->symbolTable.end()) {
-        SymbolEntry* se = this->symbolTable[name];
-        if (se->getType()->isFunc())
-            return se->setNext(entry);
-        return false;
-    } else {
-        symbolTable[name] = entry;
-        return true;
-    }
+void SymbolTable::install(std::string name, SymbolEntry* entry)
+{
+    symbolTable[name] = entry;
 }
 
 int SymbolTable::counter = 0;

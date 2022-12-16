@@ -15,6 +15,7 @@ public:
     BasicBlock *getParent();
     bool isUncond() const {return instType == UNCOND;};
     bool isCond() const {return instType == COND;};
+    bool isRet() const { return instType == RET; };
     void setParent(BasicBlock *);
     void setNext(Instruction *);
     void setPrev(Instruction *);
@@ -28,7 +29,7 @@ protected:
     Instruction *next;
     BasicBlock *parent;
     std::vector<Operand*> operands;
-    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA};
+    enum {BINARY, COND, UNCOND, RET, LOAD, STORE, CMP, ALLOCA,ZEXT};
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -116,6 +117,16 @@ class RetInstruction : public Instruction
 public:
     RetInstruction(Operand *src, BasicBlock *insert_bb = nullptr);
     ~RetInstruction();
+    void output() const;
+};
+
+//0扩展
+class ZextInstruction : public Instruction {
+   public:
+    ZextInstruction(Operand* dst,
+                    Operand* src,
+                    BasicBlock* insert_bb = nullptr);
+    ~ZextInstruction();
     void output() const;
 };
 

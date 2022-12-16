@@ -136,6 +136,8 @@ bool SymbolTable::install(std::string name, SymbolEntry* entry) {
         SymbolEntry* se = this->symbolTable[name];
         if (se->getType()->isFunc())
             return se->setNext(entry);
+        if(!se->getType()->isFunc())
+            fprintf(stderr, "identifier \"%s\" is redefined under one scope\n", name.c_str());        
         return false;
     } else {
         symbolTable[name] = entry;

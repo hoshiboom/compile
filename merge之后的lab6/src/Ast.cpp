@@ -19,7 +19,7 @@ Node::Node()
 void Node::setNext(Node* node) {
     Node* n = this;
     while (n->getNext()) 
-        n = n->getNext();//指锟斤拷末尾
+        n = n->getNext();//????β
     if (n == this) {
         this->next = node;
     } else {
@@ -48,18 +48,18 @@ std::vector<Instruction*> Node::merge(std::vector<Instruction*> &list1, std::vec
 
 FunctionUse::FunctionUse(SymbolEntry *se,ExprNode* expr):ExprNode(se), expr(expr)
 {
-    //在创建functionuse节点的时候就判断有没有声明
+    //?????functionuse?????????ж??????????
     dst = nullptr;
     SymbolEntry* s = se;
-    int paramCnt = 0;//函数调用时的实参个数
+    int paramCnt = 0;//?????????????θ???
     ExprNode* temp = expr;
     while (temp) {
         paramCnt++;
         temp = (ExprNode*)(temp->getNext());
     }
     while (s) {
-        Type* type = s->getType();   //函数类型的entry
-        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();   //形参的vector
+        Type* type = s->getType();   //?????????entry
+        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();   //?βε?vector
         int t=0;
         if ((long unsigned int)paramCnt == params.size()) {
             ExprNode* temp = expr;
@@ -77,8 +77,8 @@ FunctionUse::FunctionUse(SymbolEntry *se,ExprNode* expr):ExprNode(se), expr(expr
                 this->symbolEntry = s;
                 break;
             }
-        }//比较每个参数的type
-        s = s->getNext();//查找函数重载
+        }//????????????type
+        s = s->getNext();//???????????
     }
     if (symbolEntry) {
         Type* type = symbolEntry->getType();
@@ -88,8 +88,8 @@ FunctionUse::FunctionUse(SymbolEntry *se,ExprNode* expr):ExprNode(se), expr(expr
                 new TemporarySymbolEntry(this->type, SymbolTable::getLabel());
             dst = new Operand(se);
         }
-        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();//形参
-        ExprNode* temp = expr;//实参
+        std::vector<Type*> params = ((FunctionType*)type)->getParamsType();//?β?
+        ExprNode* temp = expr;//???
         for (auto it = params.begin(); it != params.end(); it++) {
             if (temp == nullptr) {
                 fprintf(stderr, "too few arguments to function %s %s\n",
@@ -124,13 +124,68 @@ void FunctionDef::genCode()
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
 
-    stmt->genCode();
+    if(decl){
+        decl->genCode();
+    }
+    if(stmt){
+        stmt->genCode();
+    }       
 
     /**
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
      * Todo
     */
-   
+   for(auto block = func->begin(); block != func->end(); block++){
+        //获取该块的最后一条指令
+        Instruction* i = (*block)->begin();
+        Instruction* last = (*block)->rbegin();
+        //基本块中不能跳转，不应包含条件型语句，删掉，另外直接删除有风险，新建块？？？
+        while (i != last) {
+            if (i->isCond() || i->isUncond()) {
+                (*block)->remove(i);
+            }
+            i = i->getNext();
+        }
+        //连接每个块的前后块，分情况：条件跳转获取真假分支，回填，无条件跳转直接获取跳转的目标块连接
+        if (last->isCond()) {
+            BasicBlock *truebranch, *falsebranch;
+            truebranch =
+                dynamic_cast<CondBrInstruction*>(last)->getTrueBranch();
+            falsebranch =
+                dynamic_cast<CondBrInstruction*>(last)->getFalseBranch();
+                
+            
+            (*block)->addSucc(truebranch);
+            (*block)->addSucc(falsebranch);
+            truebranch->addPred(*block);
+            falsebranch->addPred(*block);
+        } 
+        else if (last->isUncond())
+        {
+            BasicBlock* dst =
+                dynamic_cast<UncondBrInstruction*>(last)->getBranch();
+            (*block)->addSucc(dst);            
+            dst->addPred(*block);
+            //目标块为空插入return
+            if (dst->empty()) {
+                if (((FunctionType*)(se->getType()))->getRetType() ==
+                    TypeSystem::intType)
+                    new RetInstruction(new Operand(new ConstantSymbolEntry(
+                                           TypeSystem::intType, 0)),
+                                       dst);
+                else if (((FunctionType*)(se->getType()))->getRetType() ==
+                         TypeSystem::voidType)
+                    new RetInstruction(nullptr, dst);
+            }
+        }
+        //没有返回或跳转的语句插入空返回指令
+        else if ((!last->isRet())&&
+((FunctionType*)(se->getType()))->getRetType() ==TypeSystem::voidType) {
+                new RetInstruction(nullptr, *block);
+            }
+   }
+
+
 }
 
 void BinaryExpr::genCode()
@@ -150,10 +205,66 @@ void BinaryExpr::genCode()
     else if(op == OR)
     {
         // Todo
+        BasicBlock* trueBB = new BasicBlock(func);
+        expr1->genCode();
+        backPatch(expr1->falseList(), trueBB);//只有当expr1为假时才去判断expr2，也就是跳转到trueBB，因此此处回填的时expr1的falselist
+        builder->setInsertBB(trueBB);
+        expr2->genCode();
+        true_list = merge(expr1->trueList(), expr2->trueList());//有一个真就行
+        false_list = expr2->falseList();
     }
     else if(op >= LESS && op <= MORE)
     {
         // Todo
+        expr1->genCode();
+        expr2->genCode();
+        Operand* src1 = expr1->getOperand();
+        Operand* src2 = expr2->getOperand();
+        //0扩展 将i1转换为i32  关系比较_i32  
+        if (src1->getType()->getSize() == 1) {
+            Operand* dst = new Operand(new TemporarySymbolEntry(
+                TypeSystem::intType, SymbolTable::getLabel()));
+            new ZextInstruction(dst, src1, bb);
+            src1 = dst;
+        }
+        if (src2->getType()->getSize() == 1) {
+            Operand* dst = new Operand(new TemporarySymbolEntry(
+                TypeSystem::intType, SymbolTable::getLabel()));
+            new ZextInstruction(dst, src2, bb);
+            src2 = dst;
+        }
+        int cmpopcode = -1;
+        switch (op) {
+            case LESS:
+                cmpopcode = CmpInstruction::L;
+                break;
+            case EQULESS:
+                cmpopcode = CmpInstruction::LE;
+                break;
+            case MORE:
+                cmpopcode = CmpInstruction::G;
+                break;
+            case EQUMORE:
+                cmpopcode = CmpInstruction::GE;
+                break;
+            case EQUAL:
+                cmpopcode = CmpInstruction::E;
+                break;
+            case NOTEQUAL:
+                cmpopcode = CmpInstruction::NE;
+                break;
+        }
+        new CmpInstruction(cmpopcode, dst, src1, src2, bb);
+        //
+        BasicBlock *truebb, *falsebb, *tempbb;
+        //临时假块
+        truebb = new BasicBlock(func);
+        falsebb = new BasicBlock(func);
+        tempbb = new BasicBlock(func);
+
+        true_list.push_back(new CondBrInstruction(truebb, tempbb, dst, bb));
+
+        false_list.push_back(new UncondBrInstruction(falsebb, tempbb));
     }
     else if(op >= ADD && op <= SUB)
     {
@@ -316,7 +427,7 @@ bool Id::typeCheck(Type* retType)
 bool IfStmt::typeCheck(Type* retType)
 {
     // Todo
-    if (thenStmt)   //if语句里面有ret
+    if (thenStmt)   //if?????????ret
         return thenStmt->typeCheck(retType);
     return false;
 }
@@ -359,7 +470,7 @@ bool DeclStmt::typeCheck(Type* retType)
 
 bool ReturnStmt::typeCheck(Type* retType)
 { 
-    // Todo 比较ExprNode *retValue的type和传入的type是否相同
+    // Todo ???ExprNode *retValue??type??????type??????
     // retValue->getSymbolEntry()->getType()
     if (!retType) {
         fprintf(stderr, "[wrong]ret stmt not in function\n");
@@ -385,11 +496,11 @@ bool ReturnStmt::typeCheck(Type* retType)
         fprintf(stderr,
                 "cannot initialize return object of type \'%s\' with an rvalue "
                 "of type \'%s\'\n",
-                retType->toStr().c_str(), type->toStr().c_str());//锟斤拷锟斤拷锟斤拷转锟斤拷
+                retType->toStr().c_str(), type->toStr().c_str());//?????????
         fprintf(stderr,"fuctionret and ret value have different types\n");
         fprintf(stderr,"function ret type %s\n",retType->toStr().c_str());
         fprintf(stderr,"value type%s\n",type->toStr().c_str());
-        //value这个type有问题
+        //value???type??????
     }
     return true;
 }
@@ -537,7 +648,7 @@ void DeclStmt::output(int level)
 void IfStmt::output(int level)
 {
     fprintf(yyout, "%*cIfStmt\n", level, ' ');
-    cond->output(level + 4);//cond为exprnode*锟斤拷锟酵ｏ拷锟斤拷锟斤拷exprnode锟斤拷锟斤拷锟斤拷锟斤拷锟???
+    cond->output(level + 4);//cond?exprnode*?????????exprnode????????????
     thenStmt->output(level + 4);
 }
 
@@ -631,7 +742,7 @@ void ImplictCastExpr::genCode()
 
 BinaryExpr::BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) : ExprNode(se), op(op), expr1(expr1), expr2(expr2)
 {
-    //在此进行void参与运算的类型检查
+    //??????void???????????????
     if(expr1->getType()->isVoid()){
         fprintf(stderr, "void cannot participate in binary operations\n");
 
@@ -640,8 +751,8 @@ BinaryExpr::BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) 
         fprintf(stderr, "void cannot participate in binary operations\n");
     }
     dst = new Operand(se);
-    //对于cond需要隐式转换
-    if (op >= BinaryExpr::AND && op <= BinaryExpr::NOTEQUAL)//关系运算
+    //????cond?????????
+    if (op >= BinaryExpr::AND && op <= BinaryExpr::NOTEQUAL)//???????
     {
         type = TypeSystem::boolType;
         if (op == BinaryExpr::AND || op == BinaryExpr::OR) {
@@ -655,6 +766,7 @@ BinaryExpr::BinaryExpr(SymbolEntry *se, int op, ExprNode*expr1, ExprNode*expr2) 
                 ImplictCastExpr* temp = new ImplictCastExpr(expr2);
                 this->expr2 = temp;
             }
+            fprintf(stderr,"Implicit type conversion in AND/OR BinaryExpr\n");
         }
     } 
     else
@@ -666,6 +778,7 @@ IfStmt::IfStmt(ExprNode *cond, StmtNode *thenStmt) : cond(cond), thenStmt(thenSt
     if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
+            fprintf(stderr,"Implicit type conversion in Ifstmt's cond\n");
         }
 };
 
@@ -674,6 +787,7 @@ WhileStmt::WhileStmt(ExprNode* cond, StmtNode* stmt): cond(cond), stmt(stmt)
     if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
+            fprintf(stderr,"Implicit type conversion in Whilestmt's cond\n");
         }
 };
 
@@ -682,5 +796,6 @@ IfElseStmt::IfElseStmt(ExprNode *cond, StmtNode *thenStmt, StmtNode *elseStmt) :
     if (cond->getType()->isInt() && cond->getType()->getSize() == 32) {
             ImplictCastExpr* temp = new ImplictCastExpr(cond);
             this->cond = temp;
+            fprintf(stderr,"Implicit type conversion in IfElsestmt's cond\n");
         }
 };

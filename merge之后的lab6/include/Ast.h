@@ -277,7 +277,7 @@ private:
     ExprNode *lval;
     ExprNode *expr;
 public:
-    AssignStmt(ExprNode *lval, ExprNode *expr) : lval(lval), expr(expr) {};
+    AssignStmt(ExprNode *lv, ExprNode *ep) : lval(lv), expr(ep) {};
     void output(int level);
     bool typeCheck(Type* retType = nullptr);
     void genCode();
